@@ -1,12 +1,14 @@
 [package]
 name = "game-tutorial"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Sunjay Varma <varma.sunjay@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+specs = "0.14"
+specs-derive = "0.4"
 
 [dependencies.sdl2]
 version = "0.32.1"
