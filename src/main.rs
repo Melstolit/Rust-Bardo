@@ -1,3 +1,5 @@
+mod components;
+
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -7,62 +9,12 @@ use sdl2::rect::{Point, Rect};
 use sdl2::image::{self, LoadTexture, InitFlag};
 
 use specs::prelude::*;
-use specs_derive::Component;
 
 use std::time::Duration;
 
+use crate::components::*;
+
 const PLAYER_MOVEMENT_SPEED: i32 = 20;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-/// The current position of a given entity
-#[derive(Component, Debug)]
-#[storage(VecStorage)]
-struct Position(Point);
-
-/// The current speed and direction of a given entity
-#[derive(Component, Debug)]
-#[storage(VecStorage)]
-struct Velocity {
-    speed: i32,
-    direction: Direction,
-}
-
-#[derive(Component, Debug, Clone)]
-#[storage(VecStorage)]
-struct Sprite {
-    /// The specific spritesheet to render from
-    spritesheet: usize,
-    /// The current region of the spritesheet to be rendered
-    region: Rect,
-}
-
-#[derive(Component, Debug)]
-#[storage(VecStorage)]
-struct MovementAnimation {
-    // The current frame in the animation of the direction this entity is moving in
-    current_frame: usize,
-    up_frames: Vec<Sprite>,
-    down_frames: Vec<Sprite>,
-    left_frames: Vec<Sprite>,
-    right_frames: Vec<Sprite>,
-}
-
-#[derive(Component, Debug)]
-#[storage(VecStorage)]
-struct Player {
-    position: Point,
-    sprite: Rect,
-    speed: i32,
-    direction: Direction,
-    current_frame: i32,
-}
 
 /// Returns the row of the spritesheet corresponding to the given direction
 fn direction_spritesheet_row(direction: Direction) -> i32 {
@@ -173,10 +125,12 @@ fn main() -> Result<(), String> {
         .expect("could not make a canvas");
 
     let texture_creator = canvas.texture_creator();
-    
+
     let textures = [
         texture_creator.load_texture("assets/bardo.png")?,
     ];
+    let texture = &textures[0]; 
+
     // First texture in textures array
     let player_spritesheet = 0;
     let player_top_left_frame = Rect::new(0, 0, 26, 36);
@@ -205,7 +159,6 @@ fn main() -> Result<(), String> {
         .with(player_animation.right_frames[0].clone())
         .with(player_animation)
         .build();
-
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
@@ -248,7 +201,7 @@ fn main() -> Result<(), String> {
         update_player(&mut player);
 
         // Render
-        render(&mut canvas, Color::RGB(i, 64, 255 - i), &textures[0], &player)?;
+        render(&mut canvas, Color::RGB(i, 64, 255 - i), &texture, &player)?;
 
         // Time management!
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
