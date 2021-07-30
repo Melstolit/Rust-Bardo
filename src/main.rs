@@ -1,4 +1,5 @@
 mod components;
+mod physics;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
