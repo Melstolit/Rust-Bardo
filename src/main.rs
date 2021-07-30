@@ -1,5 +1,6 @@
 mod components;
 mod physics;
+mod animator;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -199,7 +200,8 @@ fn main() -> Result<(), String> {
 
         // Update
         i = (i + 1) % 255;
-        update_player(&mut player);
+        //TODO: Do with specs!
+        //update_player(&mut player);
 
         // Render
         render(&mut canvas, Color::RGB(i, 64, 255 - i), &texture, &player)?;
