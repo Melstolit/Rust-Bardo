@@ -42,13 +42,3 @@ pub struct MovementAnimation {
     pub left_frames: Vec<Sprite>,
     pub right_frames: Vec<Sprite>,
 }
-
-#[derive(Component, Debug)]
-#[storage(VecStorage)]
-pub struct Player {
-    pub position: Point,
-    pub sprite: Rect,
-    pub speed: i32,
-    pub direction: Direction,
-    pub current_frame: i32,
-}

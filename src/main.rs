@@ -83,33 +83,6 @@ fn render(
     Ok(())
 }
 
-// Update player a fixed amount based on their speed.
-// WARNING: Calling this function too often or at a variable speed will cause the player's speed
-// to be unpredictable!
-fn update_player(player: &mut Player) {
-    use self::Direction::*;
-    match player.direction {
-        Left => {
-            player.position = player.position.offset(-player.speed, 0);
-        },
-        Right => {
-            player.position = player.position.offset(player.speed, 0);
-        },
-        Up => {
-            player.position = player.position.offset(0, -player.speed);
-        },
-        Down => {
-            player.position = player.position.offset(0, player.speed);
-        },
-    }
-
-    // Only continue to animate if the player is moving
-    if player.speed != 0 {
-        // Cheat: using the fact that all animations are 3 frames (NOT extensible)
-        player.current_frame = (player.current_frame + 1) % 3;
-    }
-}
-
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
@@ -125,14 +98,19 @@ fn main() -> Result<(), String> {
 
     let mut canvas = window.into_canvas().build()
         .expect("could not make a canvas");
-
     let texture_creator = canvas.texture_creator();
+
+    let mut dispatcher = DispatcherBuilder::new()
+        .with(physics::Physics, "Physics", &[])
+        .with(animator::Animator, "Animator", &[])
+        .build();
+
+    let mut world = World::new();
+    dispatcher.setup(&mut world.res);
 
     let textures = [
         texture_creator.load_texture("assets/bardo.png")?,
     ];
-    let texture = &textures[0]; 
-
     // First texture in textures array
     let player_spritesheet = 0;
     let player_top_left_frame = Rect::new(0, 0, 26, 36);
@@ -144,16 +122,6 @@ fn main() -> Result<(), String> {
         left_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Left),
         right_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Right),
     };
-
-    let mut player = Player {
-        position: Point::new(0, 0),
-        sprite: Rect::new(0, 0, 26, 36),
-        speed: 0,
-        direction: Direction::Right,
-        current_frame: 0,
-    };
-
-    let mut world = World::new();
 
     world.create_entity()
         .with(Position(Point::new(0, 0)))
@@ -200,8 +168,8 @@ fn main() -> Result<(), String> {
 
         // Update
         i = (i + 1) % 255;
-        //TODO: Do with specs!
-        //update_player(&mut player);
+        dispatcher.dispatch(&mut world.res);
+        world.maintain();
 
         // Render
         render(&mut canvas, Color::RGB(i, 64, 255 - i), &texture, &player)?;
